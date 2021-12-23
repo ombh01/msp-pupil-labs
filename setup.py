@@ -8,7 +8,7 @@ setup(
     author_email='michael.barz@dfki.de',
     license='CC BY-NC-SA 4.0',
     packages=find_packages(
-        include=('msp_pupil_labs')
+        include=('msp_pupil_labs.*', 'msp_pupil_labs')
     ),
     url="https://github.com/DFKI-Interactive-Machine-Learning/msp-pupil-labs",
     description="Pupil Labs Eye Tracking Extension for the DFKI multisensor pipeline framework.",
