@@ -223,21 +223,21 @@ class PupilRemote:
         # set current Pupil time to timestamp
         local_clock = time.perf_counter
         offset = self.measure_clock_offset(clock_function=local_clock)
-        print(f"Clock offset (1 measurement): {offset} seconds")
+        # print(f"Clock offset (1 measurement): {offset} seconds")
         number_of_measurements = 10
         stable_offset_mean = self.measure_clock_offset_stable(
             clock_function=local_clock, nsamples=number_of_measurements
         )
-        print(
-            f"Mean clock offset ({number_of_measurements} measurements): "
-            f"{stable_offset_mean} seconds"
-        )
+        # print(
+        #     f"Mean clock offset ({number_of_measurements} measurements): "
+        #     f"{stable_offset_mean} seconds"
+        # )
 
         # 5. Infer pupil clock time from "local" clock measurement
         local_time = local_clock()
         pupil_time_calculated_locally = local_time + stable_offset_mean
-        print(f"Local time: {local_time}")
-        print(f"Pupil time (calculated locally): {pupil_time_calculated_locally}")
+        # print(f"Local time: {local_time}")
+        # print(f"Pupil time (calculated locally): {pupil_time_calculated_locally}")
         self.pupil_time_offset = stable_offset_mean
 
     def request_pupil_time(self):

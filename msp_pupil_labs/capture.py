@@ -58,7 +58,6 @@ class PupilCaptureSource(BaseSource):
             )
 
         if topic == PupilRemote.Streams.FIXATIONS:
-            print(payload)
             return MSPDataFrame(
                 topic=self._fixation_topic,
                 data=payload["fixation"].gaze_scaled,
