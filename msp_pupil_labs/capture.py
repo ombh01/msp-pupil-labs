@@ -1,3 +1,4 @@
+import time
 from typing import Optional, List, Tuple
 from PIL import Image
 from multisensor_pipeline.dataframe import MSPDataFrame, Topic
@@ -57,6 +58,7 @@ class PupilCaptureSource(BaseSource):
             )
 
         if topic == PupilRemote.Streams.FIXATIONS:
+            print(payload)
             return MSPDataFrame(
                 topic=self._fixation_topic,
                 data=payload["fixation"].gaze_scaled,
@@ -65,3 +67,4 @@ class PupilCaptureSource(BaseSource):
 
     def on_stop(self):
         self._pupil_remote.close()
+
