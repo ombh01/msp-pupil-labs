@@ -105,7 +105,7 @@ class Fixation:
     
     @property
     def fixation_point(self):
-        norm_positions = np.concatenate(arrays=tuple(self._norm_pos))
+        norm_positions = np.vstack(self._norm_pos)
         fixation = GazeSample(
             gaze=norm_positions.mean(axis=0),
             normalized=True,

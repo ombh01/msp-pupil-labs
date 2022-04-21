@@ -62,6 +62,7 @@ class PupilCaptureSource(BaseSource):
             return MSPDataFrame(
                 topic=self._fixation_topic,
                 data=payload.fixation_point.gaze_scaled,
+                duration=payload.duration,
                 timestamp=payload.timestamp
             )
 
