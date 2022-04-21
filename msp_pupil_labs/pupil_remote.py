@@ -1,6 +1,7 @@
 import io
 from typing import Optional, List
 import msgpack
+import numpy as np
 import zmq
 from PIL import Image
 import time
@@ -67,6 +68,53 @@ class GazeSample:
         return self._max_height
 
 
+class Fixation:
+
+    def __init__(self, fixation_id: int, timestamp: float, duration: float, norm_pos: np.ndarray, video_resolution):
+        self._is_complete = False
+        self._fixation_id = fixation_id
+        self._timestamps = []
+        self._durations = []
+        self._norm_pos = []
+        self._video_resolution = video_resolution
+        self.add_partial_fixation(fixation_id, timestamp, duration, norm_pos)
+
+    def add_partial_fixation(self, fixation_id: int, timestamp: float, duration: float, norm_pos: np.ndarray):
+        assert self._fixation_id == fixation_id
+        self._timestamps.append(timestamp)
+        self._norm_pos.append(norm_pos)
+        self._durations.append(duration)
+
+    def finalize(self) -> 'Fixation':
+        self._is_complete = True
+        return self
+        
+    @property
+    def index(self):
+        return self._fixation_id
+
+    @property
+    def timestamp(self) -> float:
+        return self._timestamps[0]
+
+    @property
+    def duration(self):
+        if self._is_complete:
+            return (self._timestamps[-1] - self._timestamps[0]) * 1000. + self._durations[-1]
+        return None
+    
+    @property
+    def fixation_point(self):
+        norm_positions = np.concatenate(arrays=tuple(self._norm_pos))
+        fixation = GazeSample(
+            gaze=norm_positions.mean(axis=0),
+            normalized=True,
+            reference_size=self._video_resolution,
+            origin=GazeSample.ORIGIN_BOTTOM_LEFT
+        )
+        return fixation
+
+
 class PupilRemote:
     class Streams:
         GAZE = "gaze."
@@ -97,6 +145,7 @@ class PupilRemote:
         self.subscriber = None
         self.video_resolution = None
         self.last_fixation_id = None
+        self._current_fixation = None
 
         self._streams = streams
         if streams is None:
@@ -169,6 +218,40 @@ class PupilRemote:
         else:
             raise NotImplementedError(f"image format {format} is not supported.")
 
+    def _handle_partial_fixations(self, message) -> Optional[Fixation]:
+        fixation_id = message["id"]
+        timestamp = message["timestamp"]
+        norm_pos = message["norm_pos"]
+        duration = message["duration"]
+
+        if self._current_fixation is None:
+            self._current_fixation = Fixation(
+                fixation_id=fixation_id,
+                timestamp=timestamp,
+                duration=duration,
+                norm_pos=norm_pos,
+                video_resolution=self.video_resolution
+            )
+            return None  # [self._current_fixation]
+        elif self._current_fixation.index == fixation_id:
+            self._current_fixation.add_partial_fixation(
+                fixation_id=fixation_id,
+                timestamp=timestamp,
+                duration=duration,
+                norm_pos=norm_pos
+            )
+            return None
+
+        complete_fixation = self._current_fixation.finalize()
+        self._current_fixation = Fixation(
+            fixation_id=fixation_id,
+            timestamp=timestamp,
+            duration=duration,
+            norm_pos=norm_pos,
+            video_resolution=self.video_resolution
+        )
+        return complete_fixation  # , self._current_fixation
+
     def get_next_event(self):
         topic, message = self._recv_sub_event()
 
@@ -198,21 +281,11 @@ class PupilRemote:
                 return topic, message
 
             elif topic.startswith(PupilRemote.Streams.FIXATIONS) and self.video_resolution is not None:
-                fixation_id = message["id"]
-                if self.last_fixation_id is None or fixation_id >= self.last_fixation_id:
-                    self.last_fixation_id = fixation_id
-                else:
-                    return None, None
-                topic = PupilRemote.Streams.FIXATIONS
-                gaze_sample = GazeSample(
-                    gaze=message["norm_pos"],
-                    normalized=True,
-                    reference_size=self.video_resolution,
-                    origin=GazeSample.ORIGIN_BOTTOM_LEFT
-                )
-                message["fixation"] = gaze_sample
                 self.correct_timestamp(message)
-                return topic, message
+                fixation = self._handle_partial_fixations(message)
+                if fixation is not None:
+                    topic = PupilRemote.Streams.FIXATIONS
+                    return topic, fixation
 
         return None, None
 
