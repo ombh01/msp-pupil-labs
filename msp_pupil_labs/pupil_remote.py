@@ -126,7 +126,7 @@ class PupilRemote:
         _plugin_requirements = {
             FIXATIONS: {"subject": "start_plugin", "name": "Fixation_Detector"},
             SURFACES: {"subject": "start_plugin", "name": "Surface_Tracker_Online"},
-            SCENE_VIDEO: {"subject": "start_plugin", "name": "Frame_Publisher", "args": {"format": "jpeg"}}
+            SCENE_VIDEO: {'subject': 'frame_publishing.set_format', 'format': 'bgr'}
         }
 
         @staticmethod
