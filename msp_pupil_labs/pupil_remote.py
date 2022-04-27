@@ -261,8 +261,7 @@ class PupilRemote:
                 if encoded_image is None:
                     return
                 image = self._decode_image(encoded_image, message["width"], message["height"], format=message["format"])
-                if self.video_resolution is None:
-                    self.video_resolution = image.size
+                self.video_resolution = image.size
                 message["image"] = image
                 self.correct_timestamp(message)
                 return topic, message
