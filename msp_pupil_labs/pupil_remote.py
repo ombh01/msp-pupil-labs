@@ -117,7 +117,7 @@ class Fixation:
 
 class PupilRemote:
     class Streams:
-        GAZE = "gaze."
+        GAZE = "gaze.3d.01."
         FIXATIONS = "fixations"
         SURFACES = "surfaces"
         SCENE_VIDEO = "frame.world"
