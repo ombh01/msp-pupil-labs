@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='msp-pupil-labs',
-    version='1.0.3',
+    version='1.0.4',
     author='Michael Barz',
     author_email='michael.barz@dfki.de',
     license='CC BY-NC-SA 4.0',
@@ -17,7 +17,8 @@ setup(
         'multisensor-pipeline>=2.1.0',
         'pyzmq>=20.0.0',
         'Pillow>=8.3.2',
-        'msgpack>1.0.0'
+        'msgpack>1.0.0',
+        'pupil-labs-realtime-api'
     ],
     keywords=[
         'eye tracking', 'multisensor-pipeline'
