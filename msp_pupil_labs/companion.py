@@ -6,6 +6,7 @@ from PIL import Image
 from multisensor_pipeline.dataframe import MSPDataFrame, Topic
 from multisensor_pipeline.modules.base import BaseSource
 from pupil_labs.realtime_api.simple import discover_one_device
+from .util import decode_image, GazeSample
 
 
 class PupilCompanionSource(BaseSource):
@@ -56,15 +57,16 @@ class PupilCompanionSource(BaseSource):
     def on_update(self) -> Optional[MSPDataFrame]:
         topic, data = self._queue.get()
         if topic.name == "gaze":
+            gaze = GazeSample(gaze=(data[0], data[1]), reference_size=(1088, 1080), normalized=False, origin="tl")
             return MSPDataFrame(
                 topic=topic,
-                data=(data[0], data[1]),
+                data=gaze.gaze_scaled,
                 timestamp=data.timestamp_unix_seconds - self._time_offset
             )
         else:
             return MSPDataFrame(
                 topic=topic,
-                data=Image.fromarray(data.bgr_pixels),
+                data= decode_image(data.bgr_pixels, 1088, 1080),
                 timestamp=data.timestamp_unix_seconds - self._time_offset
             )
 
