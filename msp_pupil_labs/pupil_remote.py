@@ -1,11 +1,8 @@
-import io
 from typing import Optional, List
 import msgpack
-import numpy as np
 import zmq
-from PIL import Image
 import time
-from  .util import decode_image, Fixation, GazeSample
+from .util import decode_image, FixationEvent, GazeSample
 
 
 class PupilRemote:
@@ -97,14 +94,14 @@ class PupilRemote:
                 raise e
         return topic, message
 
-    def _handle_partial_fixations(self, message) -> Optional[Fixation]:
+    def _handle_partial_fixations(self, message) -> Optional[FixationEvent]:
         fixation_id = message["id"]
         timestamp = message["timestamp"]
         norm_pos = message["norm_pos"]
         duration = message["duration"]
 
         if self._current_fixation is None:
-            self._current_fixation = Fixation(
+            self._current_fixation = FixationEvent(
                 fixation_id=fixation_id,
                 timestamp=timestamp,
                 duration=duration,
@@ -122,7 +119,7 @@ class PupilRemote:
             return None
 
         complete_fixation = self._current_fixation.finalize()
-        self._current_fixation = Fixation(
+        self._current_fixation = FixationEvent(
             fixation_id=fixation_id,
             timestamp=timestamp,
             duration=duration,
