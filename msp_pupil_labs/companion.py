@@ -25,7 +25,7 @@ class PupilCompanionSource(BaseSource):
 
         # prepare topics
         self._img_topic = Topic(name="scene_video", dtype=Image.Image)
-        self._gaze_topic = Topic(name="gaze", dtype=Tuple[int, int])
+        self._gaze_topic = Topic(name="gaze", dtype=GazeSample)
 
     def on_start(self):
         sample = self._device.receive_gaze_datum()
@@ -60,7 +60,7 @@ class PupilCompanionSource(BaseSource):
             gaze = GazeSample(gaze=(data[0], data[1]), reference_size=(1088, 1080), normalized=False, origin="tl")
             return MSPDataFrame(
                 topic=topic,
-                data=gaze.gaze_scaled,
+                data=gaze,
                 timestamp=data.timestamp_unix_seconds - self._time_offset
             )
         else:
