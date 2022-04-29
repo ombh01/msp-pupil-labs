@@ -77,7 +77,7 @@ class GazeSample:
         return self._max_height
 
 
-class Fixation:
+class FixationEvent:
 
     def __init__(self, fixation_id: int, timestamp: float, duration: float, norm_pos: np.ndarray, video_resolution):
         self._is_complete = False
